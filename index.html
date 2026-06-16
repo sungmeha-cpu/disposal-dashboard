@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>폐기 및 증정수량 추이 대시보드</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    min-height: 100vh;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+    padding: 28px 40px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .header p { font-size: 13px; color: #a0aec0; margin-top: 4px; }
+
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    margin-top: 16px;
+  }
+  .tab-btn {
+    padding: 8px 20px;
+    border: none;
+    background: rgba(255,255,255,0.08);
+    color: #a0aec0;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .tab-btn.active {
+    background: #f0f2f5;
+    color: #1a1a2e;
+    font-weight: 600;
+  }
+  .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.15); color: #fff; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px 20px 40px; }
+
+  /* KPI Cards */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+  }
+  .kpi-card.blue::before { background: #3b82f6; }
+  .kpi-card.red::before { background: #ef4444; }
+  .kpi-card.green::before { background: #10b981; }
+  .kpi-card.orange::before { background: #f59e0b; }
+  .kpi-card.purple::before { background: #8b5cf6; }
+  .kpi-card.teal::before { background: #14b8a6; }
+  .kpi-label { font-size: 12px; color: #6b7280; font-weight: 500; }
+  .kpi-value { font-size: 28px; font-weight: 700; margin: 6px 0 2px; }
+  .kpi-sub { font-size: 12px; color: #9ca3af; }
+  .kpi-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .kpi-badge.up { background: #fef2f2; color: #ef4444; }
+  .kpi-badge.down { background: #ecfdf5; color: #10b981; }
+
+  /* Insight Box */
+  .insight-box {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-left: 5px solid #f59e0b;
+    border-radius: 12px;
+    padding: 18px 24px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .insight-box strong { color: #92400e; }
+  .insight-box .insight-title {
+    font-weight: 700;
+    font-size: 15px;
+    color: #92400e;
+    margin-bottom: 8px;
+  }
+
+  /* Chart cards */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  .chart-grid.single { grid-template-columns: 1fr; }
+  .chart-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .chart-card.full { grid-column: 1 / -1; }
+  .chart-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #1a1a2e;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chart-title .badge {
+    font-size: 11px;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+  }
+  .badge-red { background: #fef2f2; color: #ef4444; }
+  .badge-blue { background: #eff6ff; color: #3b82f6; }
+  .badge-green { background: #ecfdf5; color: #10b981; }
+
+  .chart-wrap { position: relative; height: 320px; }
+  .chart-wrap.tall { height: 420px; }
+  .chart-wrap.short { height: 260px; }
+
+  /* Table */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .data-table th {
+    background: #f8fafc;
+    padding: 10px 12px;
+    text-align: right;
+    font-weight: 600;
+    color: #475569;
+    border-bottom: 2px solid #e2e8f0;
+    white-space: nowrap;
+  }
+  .data-table th:first-child, .data-table td:first-child { text-align: left; }
+  .data-table td {
+    padding: 9px 12px;
+    text-align: right;
+    border-bottom: 1px solid #f1f5f9;
+    white-space: nowrap;
+  }
+  .data-table tr:hover td { background: #f8fafc; }
+  .highlight-cell { color: #ef4444; font-weight: 600; }
+  .trend-up { color: #ef4444; }
+  .trend-down { color: #10b981; }
+
+  @media (max-width: 900px) {
+    .chart-grid { grid-template-columns: 1fr; }
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .header { padding: 20px; }
+    .container { padding: 16px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>폐기 및 증정수량 추이 대시보드</h1>
+  <p>2026년 1월 ~ 5월 | 물류 폐기 + 백화점 증정 현황 분석</p>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showTab('overview')">Overview</button>
+    <button class="tab-btn" onclick="showTab('dept')">백화점 증정 분석</button>
+    <button class="tab-btn" onclick="showTab('logistics')">물류 폐기 분석</button>
+    <button class="tab-btn" onclick="showTab('menu')">메뉴별 분석</button>
+  </div>
+</div>
+
+<!-- ========== TAB 1: Overview ========== -->
+<div id="tab-overview" class="tab-content active">
+<div class="container">
+
+  <div class="insight-box">
+    <div class="insight-title">Key Insight</div>
+    <strong>물류 폐기수량은 1~2월 대비 3월 이후 급감(-96.8%)</strong>했지만,
+    <strong>백화점 증정수량은 오히려 3월 이후 급증(+188%)</strong>했습니다.<br>
+    전체 합계는 큰 변화가 없어, <strong>물류에서 폐기하던 물량이 백화점 증정으로 이전</strong>된 것으로 보입니다.<br>
+    특히 3월부터 소비기한 만료 폐기가 0으로 줄면서, 해당 물량이 백화점 무상 납품(증정)으로 처리되고 있을 가능성이 높습니다.
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card blue">
+      <div class="kpi-label">1~5월 총 처분수량</div>
+      <div class="kpi-value">138,497</div>
+      <div class="kpi-sub">폐기 40,192 + 증정 98,150</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">물류 폐기 (5월)</div>
+      <div class="kpi-value">639</div>
+      <div class="kpi-sub"><span class="kpi-badge down">-96.8%</span> vs 1월(15,818)</div>
+    </div>
+    <div class="kpi-card orange">
+      <div class="kpi-label">백화점 증정 (5월)</div>
+      <div class="kpi-value">20,957</div>
+      <div class="kpi-sub"><span class="kpi-badge up">+52.6%</span> vs 1월(13,736)</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">증정 비중 (5월)</div>
+      <div class="kpi-value">97.0%</div>
+      <div class="kpi-sub">1월 46.5% → 5월 97.0%</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-label">생산 대비 폐기율 (5월)</div>
+      <div class="kpi-value">0.09%</div>
+      <div class="kpi-sub">1월 2.3% → 5월 0.09%</div>
+    </div>
+    <div class="kpi-card teal">
+      <div class="kpi-label">판매 대비 증정율 (5월)</div>
+      <div class="kpi-value">12.2%</div>
+      <div class="kpi-sub">1월 9.1% → 5월 12.2%</div>
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card full">
+      <div class="chart-title">월별 폐기 vs 증정 수량 추이 (역전 현상) <span class="badge badge-red">Core</span></div>
+      <div class="chart-wrap"><canvas id="chartOverview"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title">물류 폐기 vs 백화점 증정 비중 변화</div>
+      <div class="chart-wrap"><canvas id="chartProportion"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">생산 대비 폐기율 & 판매 대비 증정율</div>
+      <div class="chart-wrap"><canvas id="chartRatios"></canvas></div>
+    </div>
+  </div>
+
+  <!-- 요약 테이블 -->
+  <div class="chart-card" style="margin-bottom:24px;">
+    <div class="chart-title">월별 요약 테이블</div>
+    <table class="data-table">
+      <thead>
+        <tr><th>구분</th><th>1월</th><th>2월</th><th>3월</th><th>4월</th><th>5월</th><th>합계</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>합계</strong></td><td>29,554</td><td>29,659</td><td>31,694</td><td>25,994</td><td>21,596</td><td>138,497</td></tr>
+        <tr><td>물류 폐기</td><td>15,818</td><td>19,852</td><td>3,412</td><td>626</td><td>639</td><td>40,347</td></tr>
+        <tr><td style="color:#6b7280;font-size:12px">  - 비중</td><td>53.5%</td><td>66.9%</td><td>10.8%</td><td>2.4%</td><td>3.0%</td><td>-</td></tr>
+        <tr><td>백화점 증정</td><td>13,736</td><td>9,807</td><td>28,282</td><td>25,368</td><td>20,957</td><td>98,150</td></tr>
+        <tr><td style="color:#6b7280;font-size:12px">  - 비중</td><td>46.5%</td><td>33.1%</td><td>89.2%</td><td>97.6%</td><td>97.0%</td><td>-</td></tr>
+        <tr style="border-top:2px solid #e2e8f0"><td>생산수량</td><td>674,893</td><td>715,585</td><td>715,032</td><td>763,810</td><td>673,635</td><td>3,542,955</td></tr>
+        <tr><td style="color:#6b7280;font-size:12px">  - 폐기율</td><td class="highlight-cell">2.34%</td><td class="highlight-cell">2.77%</td><td>0.48%</td><td>0.08%</td><td>0.09%</td><td>-</td></tr>
+        <tr><td>판매수량</td><td>151,001</td><td>140,194</td><td>168,992</td><td>149,684</td><td>172,203</td><td>782,074</td></tr>
+        <tr><td style="color:#6b7280;font-size:12px">  - 증정율</td><td>9.1%</td><td>7.0%</td><td class="highlight-cell">16.7%</td><td class="highlight-cell">16.9%</td><td class="highlight-cell">12.2%</td><td>-</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+</div>
+
+<!-- ========== TAB 2: 백화점 증정 분석 ========== -->
+<div id="tab-dept" class="tab-content">
+<div class="container">
+
+  <div class="kpi-row">
+    <div class="kpi-card orange">
+      <div class="kpi-label">총 증정수량 (1~5월)</div>
+      <div class="kpi-value">98,150</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">최다 증정 매장</div>
+      <div class="kpi-value" style="font-size:20px">롯데 중동점</div>
+      <div class="kpi-sub">12,518개 (전체 12.8%)</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">최다 증정 품목</div>
+      <div class="kpi-value" style="font-size:18px">퓨레-망고퓨레</div>
+      <div class="kpi-sub">1,357개</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-label">3~5월 증정 비중</div>
+      <div class="kpi-value">76.0%</div>
+      <div class="kpi-sub">74,607 / 98,150</div>
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title">거래처별 증정수량 TOP 15 <span class="badge badge-blue">Store</span></div>
+      <div class="chart-wrap tall"><canvas id="chartStoreTop"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">월별 판매분류별 증정수량 <span class="badge badge-green">Category</span></div>
+      <div class="chart-wrap tall"><canvas id="chartCatMonth"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card full">
+      <div class="chart-title">월별 단계(메뉴 카테고리)별 증정수량 히트맵</div>
+      <div class="chart-wrap tall"><canvas id="chartStageMonth"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-card" style="margin-bottom:24px;">
+    <div class="chart-title">거래처별 월별 증정수량</div>
+    <div style="overflow-x:auto;">
+    <table class="data-table" id="storeTable">
+      <thead>
+        <tr><th>거래처명</th><th>1월</th><th>2월</th><th>3월</th><th>4월</th><th>5월</th><th>합계</th><th>추세</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ========== TAB 3: 물류 폐기 분석 ========== -->
+<div id="tab-logistics" class="tab-content">
+<div class="container">
+
+  <div class="kpi-row">
+    <div class="kpi-card red">
+      <div class="kpi-label">총 폐기수량 (1~5월)</div>
+      <div class="kpi-value">40,347</div>
+    </div>
+    <div class="kpi-card orange">
+      <div class="kpi-label">최대 폐기 사유</div>
+      <div class="kpi-value" style="font-size:18px">소비기한 만료</div>
+      <div class="kpi-sub">32,885개 (81.5%)</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">소비기한 폐기 (4~5월)</div>
+      <div class="kpi-value">0</div>
+      <div class="kpi-sub">1~2월 30,285개 → 0개</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">품질불량 폐기 (5월)</div>
+      <div class="kpi-value">639</div>
+      <div class="kpi-sub">진공/라벨/뚜껑/병파손 등</div>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <div class="insight-title">폐기 사유 변화 핵심</div>
+    1~2월 폐기의 <strong>81%가 소비기한 만료</strong>였으나, 4~5월에는 소비기한 폐기가 <strong>0건</strong>입니다.<br>
+    같은 기간 백화점 증정이 급증한 점을 고려하면, <strong>소비기한 임박 제품을 백화점에서 무상 증정으로 소진</strong>하고 있는 것으로 판단됩니다.<br>
+    4~5월 폐기는 순수 <strong>품질불량(진공/라벨/뚜껑/병파손)</strong>만 남아있어, 폐기 자체는 건전한 구조로 전환되었습니다.
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title">월별 폐기 사유 구성 <span class="badge badge-red">Reason</span></div>
+      <div class="chart-wrap tall"><canvas id="chartReasons"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">월별 단계별 폐기수량</div>
+      <div class="chart-wrap tall"><canvas id="chartLogStage"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-grid single">
+    <div class="chart-card">
+      <div class="chart-title">소비기한 폐기 vs 백화점 증정 (역상관)</div>
+      <div class="chart-wrap"><canvas id="chartInverse"></canvas></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ========== TAB 4: 메뉴별 분석 ========== -->
+<div id="tab-menu" class="tab-content">
+<div class="container">
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title">백화점 증정 품목 TOP 15 <span class="badge badge-blue">Gift</span></div>
+      <div class="chart-wrap tall"><canvas id="chartMenuGift"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">물류 폐기 품목 TOP 15 <span class="badge badge-red">Disposal</span></div>
+      <div class="chart-wrap tall"><canvas id="chartMenuDisposal"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card full">
+      <div class="chart-title">판매분류별 폐기 + 증정 비교</div>
+      <div class="chart-wrap"><canvas id="chartCatCompare"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-card" style="margin-bottom:24px;">
+    <div class="chart-title">단계별 폐기 vs 증정 수량 비교</div>
+    <div style="overflow-x:auto;">
+    <table class="data-table">
+      <thead>
+        <tr><th>단계</th><th>물류 폐기</th><th>백화점 증정</th><th>합계</th><th>증정 비율</th></tr>
+      </thead>
+      <tbody id="stageCompareBody"></tbody>
+    </table>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+Chart.register(ChartDataLabels);
+Chart.defaults.plugins.datalabels.display = false;
+Chart.defaults.font.family = "'Noto Sans KR', sans-serif";
+
+const MONTHS = ['1월','2월','3월','4월','5월'];
+const COLORS = {
+  red: '#ef4444', blue: '#3b82f6', green: '#10b981', orange: '#f59e0b',
+  purple: '#8b5cf6', teal: '#14b8a6', pink: '#ec4899', indigo: '#6366f1',
+  lime: '#84cc16', cyan: '#06b6d4', amber: '#d97706', rose: '#f43f5e',
+  slate: '#64748b', emerald: '#059669', sky: '#0ea5e9', fuchsia: '#d946ef'
+};
+const PALETTE = Object.values(COLORS);
+
+function fmt(n) { return n.toLocaleString(); }
+
+// ========== TAB LOGIC ==========
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ========== OVERVIEW CHARTS ==========
+// 1. Main overview chart
+new Chart(document.getElementById('chartOverview'), {
+  type: 'bar',
+  data: {
+    labels: MONTHS,
+    datasets: [
+      {
+        label: '물류 폐기',
+        data: [15818, 19852, 3412, 626, 639],
+        backgroundColor: 'rgba(239,68,68,0.75)',
+        borderColor: '#ef4444',
+        borderWidth: 1,
+        order: 2
+      },
+      {
+        label: '백화점 증정',
+        data: [13736, 9807, 28282, 25368, 20957],
+        backgroundColor: 'rgba(245,158,11,0.75)',
+        borderColor: '#f59e0b',
+        borderWidth: 1,
+        order: 2
+      },
+      {
+        label: '합계',
+        data: [29554, 29659, 31694, 25994, 21596],
+        type: 'line',
+        borderColor: '#1a1a2e',
+        backgroundColor: 'rgba(26,26,46,0.1)',
+        borderWidth: 3,
+        pointRadius: 5,
+        pointBackgroundColor: '#1a1a2e',
+        tension: 0.3,
+        fill: false,
+        order: 1
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      datalabels: {
+        display: function(ctx) { return ctx.dataset.label === '합계'; },
+        anchor: 'end', align: 'top', offset: 4,
+        font: { weight: 'bold', size: 12 },
+        formatter: v => fmt(v)
+      },
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + fmt(ctx.raw) } }
+    },
+    scales: {
+      x: { stacked: true },
+      y: { stacked: true, beginAtZero: true, ticks: { callback: v => fmt(v) } }
+    }
+  }
+});
+
+// 2. Proportion chart
+new Chart(document.getElementById('chartProportion'), {
+  type: 'bar',
+  data: {
+    labels: MONTHS,
+    datasets: [
+      {
+        label: '물류 폐기 비중',
+        data: [53.5, 66.9, 10.8, 2.4, 3.0],
+        backgroundColor: 'rgba(239,68,68,0.7)',
+      },
+      {
+        label: '백화점 증정 비중',
+        data: [46.5, 33.1, 89.2, 97.6, 97.0],
+        backgroundColor: 'rgba(245,158,11,0.7)',
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    indexAxis: 'x',
+    plugins: {
+      datalabels: {
+        display: true,
+        formatter: v => v + '%',
+        color: '#fff',
+        font: { weight: 'bold', size: 11 }
+      }
+    },
+    scales: {
+      x: { stacked: true },
+      y: { stacked: true, max: 100, ticks: { callback: v => v + '%' } }
+    }
+  }
+});
+
+// 3. Ratios
+new Chart(document.getElementById('chartRatios'), {
+  type: 'line',
+  data: {
+    labels: MONTHS,
+    datasets: [
+      {
+        label: '생산 대비 폐기율',
+        data: [2.34, 2.77, 0.48, 0.08, 0.09],
+        borderColor: COLORS.red,
+        backgroundColor: 'rgba(239,68,68,0.1)',
+        borderWidth: 3,
+        pointRadius: 5,
+        tension: 0.3,
+        fill: true,
+        yAxisID: 'y'
+      },
+      {
+        label: '판매 대비 증정율',
+        data: [9.1, 7.0, 16.7, 16.9, 12.2],
+        borderColor: COLORS.orange,
+        backgroundColor: 'rgba(245,158,11,0.1)',
+        borderWidth: 3,
+        pointRadius: 5,
+        tension: 0.3,
+        fill: true,
+        yAxisID: 'y1'
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      datalabels: {
+        display: true,
+        formatter: v => v + '%',
+        font: { weight: 'bold', size: 11 },
+        anchor: 'end', align: 'top'
+      }
+    },
+    scales: {
+      y: { position: 'left', title: { display: true, text: '폐기율 (%)' }, ticks: { callback: v => v + '%' } },
+      y1: { position: 'right', title: { display: true, text: '증정율 (%)' }, ticks: { callback: v => v + '%' }, grid: { drawOnChartArea: false } }
+    }
+  }
+});
+
+// ========== DEPT STORE CHARTS ==========
+// Store TOP 15
+const storeData = [
+  {name: '롯데 중동점', vals: [1744,1398,3193,3558,2625], total: 12518},
+  {name: '갤러리아백화점 광교점', vals: [766,821,2090,1882,1419], total: 6978},
+  {name: 'AK 광명점', vals: [671,319,2411,1989,1303], total: 6693},
+  {name: '신세계백화점 강남점', vals: [918,659,1836,1377,1638], total: 6428},
+  {name: '롯데 노원점', vals: [1352,662,1950,1254,394], total: 5612},
+  {name: '스타필드 위례점', vals: [690,893,1664,1078,1152], total: 5477},
+  {name: '롯데 잠실점', vals: [482,496,1702,1202,1067], total: 4949},
+  {name: '이마트 검단점', vals: [0,0,0,297,4615], total: 4912},
+  {name: '한무쇼핑(주)목동점', vals: [922,585,1224,1188,971], total: 4890},
+  {name: '신세계 본점', vals: [703,446,1196,1379,914], total: 4638},
+  {name: '스타필드 수원점', vals: [314,376,1569,1387,825], total: 4471},
+  {name: '롯데 대전점', vals: [922,448,1067,1034,866], total: 4337},
+  {name: '롯데 동래점', vals: [751,540,1059,1100,759], total: 4209},
+  {name: 'AK 기흥점', vals: [505,377,1840,920,534], total: 4176},
+  {name: '롯데 대구점', vals: [417,238,2540,332,389], total: 3916},
+];
+
+new Chart(document.getElementById('chartStoreTop'), {
+  type: 'bar',
+  data: {
+    labels: storeData.map(s => s.name),
+    datasets: MONTHS.map((m, i) => ({
+      label: m,
+      data: storeData.map(s => s.vals[i]),
+      backgroundColor: PALETTE[i],
+    }))
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: {
+      datalabels: { display: false },
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + fmt(ctx.raw) } }
+    },
+    scales: {
+      x: { stacked: true, ticks: { callback: v => fmt(v) } },
+      y: { stacked: true }
+    }
+  }
+});
+
+// Store table
+(function() {
+  const tbody = document.querySelector('#storeTable tbody');
+  storeData.forEach(s => {
+    const maxIdx = s.vals.indexOf(Math.max(...s.vals));
+    const trend = s.vals[4] > s.vals[0] ? '<span class="trend-up">↑</span>' : '<span class="trend-down">↓</span>';
+    const row = `<tr>
+      <td>${s.name}</td>
+      ${s.vals.map((v, i) => `<td ${i === maxIdx ? 'class="highlight-cell"' : ''}>${fmt(v)}</td>`).join('')}
+      <td><strong>${fmt(s.total)}</strong></td>
+      <td>${trend}</td>
+    </tr>`;
+    tbody.innerHTML += row;
+  });
+})();
+
+// Category by month
+new Chart(document.getElementById('chartCatMonth'), {
+  type: 'bar',
+  data: {
+    labels: MONTHS,
+    datasets: [
+      { label: '이유식', data: [6245,3746,20660,13017,10075], backgroundColor: COLORS.blue },
+      { label: '유아식', data: [5470,3403,5583,7771,8981], backgroundColor: COLORS.green },
+      { label: '간식', data: [1980,2610,1966,4464,1804], backgroundColor: COLORS.orange },
+      { label: '키즈식', data: [41,48,73,116,97], backgroundColor: COLORS.purple },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { datalabels: { display: false } },
+    scales: {
+      x: { stacked: true },
+      y: { stacked: true, ticks: { callback: v => fmt(v) } }
+    }
+  }
+});
+
+// Stage by month heatmap (grouped bar)
+const deptStages = ['후기','무른밥','영양찬','영양밥','영양국','퓨레','중기','초기2','초기1','준비기'];
+const deptStageData = {
+  '후기':     [3668,1589,10410,4714,3574],
+  '무른밥':   [799,499,3623,5580,3790],
+  '영양찬':   [2246,1631,1509,2620,3571],
+  '영양밥':   [2025,998,1734,3943,2922],
+  '영양국':   [1196,774,2201,1220,2574],
+  '퓨레':     [1980,2610,1966,4464,1804],
+  '중기':     [1246,952,3780,1527,1800],
+  '초기2':    [199,370,1989,238,198],
+  '초기1':    [241,275,571,123,376],
+  '준비기':   [51,35,168,63,71],
+};
+
+new Chart(document.getElementById('chartStageMonth'), {
+  type: 'bar',
+  data: {
+    labels: deptStages,
+    datasets: MONTHS.map((m, i) => ({
+      label: m,
+      data: deptStages.map(s => deptStageData[s][i]),
+      backgroundColor: PALETTE[i],
+    }))
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { datalabels: { display: false } },
+    scales: { y: { ticks: { callback: v => fmt(v) } } }
+  }
+});
+
+// ========== LOGISTICS CHARTS ==========
+// Reasons stacked
+new Chart(document.getElementById('chartReasons'), {
+  type: 'bar',
+  data: {
+    labels: ['12월(전월)','1월','2월','3월','4월','5월'],
+    datasets: [
+      { label: '소비기한', data: [648,15012,15273,1952,0,0], backgroundColor: '#ef4444' },
+      { label: '진공불량', data: [0,0,170,228,263,302], backgroundColor: '#3b82f6' },
+      { label: '라벨불량', data: [34,139,80,85,81,90], backgroundColor: '#10b981' },
+      { label: '뚜껑불량', data: [118,259,97,80,61,72], backgroundColor: '#f59e0b' },
+      { label: '병파손', data: [24,96,79,269,194,150], backgroundColor: '#8b5cf6' },
+      { label: '오염(이물질)', data: [0,0,432,35,27,24], backgroundColor: '#ec4899' },
+      { label: '전산오등록', data: [0,178,1712,0,0,1], backgroundColor: '#64748b' },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { datalabels: { display: false } },
+    scales: {
+      x: { stacked: true },
+      y: { stacked: true, ticks: { callback: v => fmt(v) } }
+    }
+  }
+});
+
+// Logistics stage
+const logStages = ['후기','영양찬','영양밥','무른밥','영양국','초기2','중기','퓨레','쿠팡','초기1'];
+const logStageData = {
+  '후기':   [8346,3798,436,138,159],
+  '영양찬': [2526,3173,255,61,71],
+  '영양밥': [1886,4061,257,51,45],
+  '무른밥': [1259,735,422,151,120],
+  '영양국': [468,323,142,41,32],
+  '초기2':  [765,434,580,13,17],
+  '중기':   [135,677,224,100,88],
+  '퓨레':   [229,281,56,18,8],
+  '쿠팡':   [0,1601,211,31,61],
+  '초기1':  [96,386,21,15,2],
+};
+
+new Chart(document.getElementById('chartLogStage'), {
+  type: 'bar',
+  data: {
+    labels: logStages,
+    datasets: MONTHS.map((m, i) => ({
+      label: m,
+      data: logStages.map(s => logStageData[s][i]),
+      backgroundColor: PALETTE[i],
+    }))
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { datalabels: { display: false } },
+    scales: { y: { ticks: { callback: v => fmt(v) } } }
+  }
+});
+
+// Inverse correlation
+new Chart(document.getElementById('chartInverse'), {
+  type: 'line',
+  data: {
+    labels: MONTHS,
+    datasets: [
+      {
+        label: '소비기한 폐기',
+        data: [15012, 15273, 1952, 0, 0],
+        borderColor: COLORS.red,
+        backgroundColor: 'rgba(239,68,68,0.15)',
+        borderWidth: 3, pointRadius: 6, tension: 0.3, fill: true,
+        yAxisID: 'y'
+      },
+      {
+        label: '백화점 증정',
+        data: [13736, 9807, 28282, 25368, 20957],
+        borderColor: COLORS.orange,
+        backgroundColor: 'rgba(245,158,11,0.15)',
+        borderWidth: 3, pointRadius: 6, tension: 0.3, fill: true,
+        yAxisID: 'y'
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      datalabels: {
+        display: true,
+        formatter: v => fmt(v),
+        font: { weight: 'bold', size: 11 },
+        anchor: 'end', align: 'top'
+      }
+    },
+    scales: {
+      y: { ticks: { callback: v => fmt(v) } }
+    }
+  }
+});
+
+// ========== MENU CHARTS ==========
+// Gift items top 15
+const giftItems = [
+  ['퓨레-망고퓨레',1357],['퓨레-감자치즈퓨레',1283],['퓨레-닭가슴살퓨레',1155],
+  ['후기-검은콩찹쌀죽',1124],['무른밥-병아리콩영양무른밥',1102],['후기-현미약콩죽',1002],
+  ['후기-한우무나물다시마죽',946],['무른밥-비타민애호박무른밥',904],['퓨레-닭가슴살퓨레(100g)',899],
+  ['후기-약콩닭죽',891],['퓨레-배퓨레',890],['퓨레-단호박치즈퓨레',883],
+  ['퓨레-고구마치즈퓨레',869],['후기-한우녹미야채죽',778],['후기-한우현미영양죽',775]
+];
+
+new Chart(document.getElementById('chartMenuGift'), {
+  type: 'bar',
+  data: {
+    labels: giftItems.map(i => i[0]),
+    datasets: [{
+      data: giftItems.map(i => i[1]),
+      backgroundColor: giftItems.map((_, i) => PALETTE[i % PALETTE.length]),
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: {
+      legend: { display: false },
+      datalabels: {
+        display: true, anchor: 'end', align: 'end',
+        formatter: v => fmt(v),
+        font: { weight: 'bold', size: 11 }
+      }
+    },
+    scales: { x: { ticks: { callback: v => fmt(v) } } }
+  }
+});
+
+// Disposal items top 15
+const dispItems = [
+  ['후기-한우병아리콩죽',1394],['후기-한우알배추죽',954],['영양밥-한우배우엉밥',916],
+  ['영양밥-한우애호박밥',904],['영양찬-한우브로컬리찜',858],['후기-한우브로컬리사과죽',712],
+  ['후기-한우녹미야채죽',588],['쿠팡후기-한우새송이죽',571],['쿠팡후기-치아씨드영양닭죽',571],
+  ['키즈식-한우오리지널솥밥',569],['쿠팡후기-한우브로콜리죽',564],['영양밥-한우버섯파프리카볶음밥',557],
+  ['영양밥-한우오트밀밥',542],['후기-한우청경채단호박죽',534],['후기-가지나물치즈죽',501]
+];
+
+new Chart(document.getElementById('chartMenuDisposal'), {
+  type: 'bar',
+  data: {
+    labels: dispItems.map(i => i[0]),
+    datasets: [{
+      data: dispItems.map(i => i[1]),
+      backgroundColor: dispItems.map((_, i) => {
+        const reds = ['#fca5a5','#f87171','#ef4444','#dc2626','#b91c1c','#991b1b','#7f1d1d',
+                      '#fecaca','#fca5a5','#f87171','#ef4444','#dc2626','#b91c1c','#991b1b','#7f1d1d'];
+        return reds[i];
+      }),
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: {
+      legend: { display: false },
+      datalabels: {
+        display: true, anchor: 'end', align: 'end',
+        formatter: v => fmt(v),
+        font: { weight: 'bold', size: 11 }
+      }
+    },
+    scales: { x: { ticks: { callback: v => fmt(v) } } }
+  }
+});
+
+// Category compare (disposal vs gift)
+const cats = ['이유식','유아식','간식','키즈식'];
+const dispByCat = [14197, 16762, 592, 1931]; // 폐기: 후기+무른밥+중기+초기 / 영양밥+영양찬+영양국 / 퓨레 / 솥밥+부먹+키즈
+const giftByCat = [53743, 25227, 10824, 375];
+
+new Chart(document.getElementById('chartCatCompare'), {
+  type: 'bar',
+  data: {
+    labels: cats,
+    datasets: [
+      { label: '물류 폐기', data: dispByCat, backgroundColor: 'rgba(239,68,68,0.7)' },
+      { label: '백화점 증정', data: giftByCat, backgroundColor: 'rgba(245,158,11,0.7)' }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      datalabels: {
+        display: true, anchor: 'end', align: 'top',
+        formatter: v => fmt(v),
+        font: { weight: 'bold', size: 11 }
+      }
+    },
+    scales: { y: { ticks: { callback: v => fmt(v) } } }
+  }
+});
+
+// Stage compare table
+(function() {
+  const stages = [
+    ['후기', 12876, 23955],
+    ['무른밥', 2687, 14291],
+    ['영양찬', 6086, 11577],
+    ['영양밥', 6800, 11622],
+    ['영양국', 1006, 7945],
+    ['퓨레', 592, 10824],
+    ['중기', 1224, 9305],
+    ['초기2', 1809, 2994],
+    ['초기1', 520, 1586],
+    ['준비기', 208, 388],
+  ];
+  const tbody = document.getElementById('stageCompareBody');
+  stages.forEach(([name, disp, gift]) => {
+    const total = disp + gift;
+    const ratio = (gift / total * 100).toFixed(1);
+    tbody.innerHTML += `<tr>
+      <td>${name}</td>
+      <td>${fmt(disp)}</td>
+      <td>${fmt(gift)}</td>
+      <td><strong>${fmt(total)}</strong></td>
+      <td>${ratio}%</td>
+    </tr>`;
+  });
+})();
+</script>
+
+</body>
+</html>
