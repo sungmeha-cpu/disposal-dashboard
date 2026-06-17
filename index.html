@@ -33,6 +33,7 @@
     display: flex;
     gap: 4px;
     margin-top: 16px;
+    flex-wrap: wrap;
   }
   .tab-btn {
     padding: 8px 20px;
@@ -115,6 +116,30 @@
     color: #92400e;
     margin-bottom: 8px;
   }
+  .insight-box.blue-box {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border-left-color: #3b82f6;
+  }
+  .insight-box.blue-box strong { color: #1e40af; }
+  .insight-box.blue-box .insight-title { color: #1e40af; }
+  .insight-box.red-box {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border-left-color: #ef4444;
+  }
+  .insight-box.red-box strong { color: #991b1b; }
+  .insight-box.red-box .insight-title { color: #991b1b; }
+  .insight-box.green-box {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    border-left-color: #10b981;
+  }
+  .insight-box.green-box strong { color: #065f46; }
+  .insight-box.green-box .insight-title { color: #065f46; }
+  .insight-box.purple-box {
+    background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+    border-left-color: #8b5cf6;
+  }
+  .insight-box.purple-box strong { color: #5b21b6; }
+  .insight-box.purple-box .insight-title { color: #5b21b6; }
 
   /* Chart cards */
   .chart-grid {
@@ -139,6 +164,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
   }
   .chart-title .badge {
     font-size: 11px;
@@ -149,10 +175,40 @@
   .badge-red { background: #fef2f2; color: #ef4444; }
   .badge-blue { background: #eff6ff; color: #3b82f6; }
   .badge-green { background: #ecfdf5; color: #10b981; }
+  .badge-purple { background: #f5f3ff; color: #8b5cf6; }
+  .badge-orange { background: #fff7ed; color: #ea580c; }
 
   .chart-wrap { position: relative; height: 320px; }
   .chart-wrap.tall { height: 420px; }
+  .chart-wrap.xtall { height: 500px; }
   .chart-wrap.short { height: 260px; }
+
+  /* Month selector */
+  .month-selector {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .month-btn {
+    padding: 6px 16px;
+    border: 2px solid #e2e8f0;
+    background: #fff;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    font-weight: 500;
+    color: #64748b;
+    transition: all 0.2s;
+  }
+  .month-btn.active {
+    border-color: #3b82f6;
+    background: #eff6ff;
+    color: #3b82f6;
+    font-weight: 600;
+  }
+  .month-btn:hover:not(.active) { border-color: #94a3b8; }
 
   /* Table */
   .data-table {
@@ -181,6 +237,12 @@
   .trend-up { color: #ef4444; }
   .trend-down { color: #10b981; }
 
+  .section-divider {
+    border: none;
+    border-top: 2px dashed #e2e8f0;
+    margin: 32px 0;
+  }
+
   @media (max-width: 900px) {
     .chart-grid { grid-template-columns: 1fr; }
     .kpi-row { grid-template-columns: repeat(2, 1fr); }
@@ -195,10 +257,10 @@
   <h1>폐기 및 증정수량 추이 대시보드</h1>
   <p>2026년 1월 ~ 5월 | 물류 폐기 + 백화점 증정 현황 분석</p>
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="showTab('overview')">Overview</button>
-    <button class="tab-btn" onclick="showTab('dept')">백화점 증정 분석</button>
-    <button class="tab-btn" onclick="showTab('logistics')">물류 폐기 분석</button>
-    <button class="tab-btn" onclick="showTab('menu')">메뉴별 분석</button>
+    <button class="tab-btn active" onclick="showTab('overview', this)">Overview</button>
+    <button class="tab-btn" onclick="showTab('dept', this)">백화점 증정 분석</button>
+    <button class="tab-btn" onclick="showTab('logistics', this)">물류 폐기 분석</button>
+    <button class="tab-btn" onclick="showTab('menu', this)">메뉴별 분석</button>
   </div>
 </div>
 
@@ -207,18 +269,25 @@
 <div class="container">
 
   <div class="insight-box">
-    <div class="insight-title">Key Insight</div>
+    <div class="insight-title">Key Insight - 폐기에서 증정으로의 구조 전환</div>
     <strong>물류 폐기수량은 1~2월 대비 3월 이후 급감(-96.8%)</strong>했지만,
     <strong>백화점 증정수량은 오히려 3월 이후 급증(+188%)</strong>했습니다.<br>
     전체 합계는 큰 변화가 없어, <strong>물류에서 폐기하던 물량이 백화점 증정으로 이전</strong>된 것으로 보입니다.<br>
     특히 3월부터 소비기한 만료 폐기가 0으로 줄면서, 해당 물량이 백화점 무상 납품(증정)으로 처리되고 있을 가능성이 높습니다.
   </div>
 
+  <div class="insight-box blue-box">
+    <div class="insight-title">매출 희석 리스크</div>
+    백화점 판매 대비 증정율이 <strong>1월 9.1% → 3월 16.7% → 4월 16.9%</strong>로 상승했습니다.
+    판매 약 <strong>6개당 1개를 무상 제공</strong>하는 셈으로, 이는 <strong>백화점 채널 수익성을 크게 훼손</strong>할 수 있습니다.<br>
+    5월에 12.2%로 다소 완화되었으나, 여전히 1~2월(평균 8%) 대비 높은 수준입니다.
+  </div>
+
   <div class="kpi-row">
     <div class="kpi-card blue">
       <div class="kpi-label">1~5월 총 처분수량</div>
       <div class="kpi-value">138,497</div>
-      <div class="kpi-sub">폐기 40,192 + 증정 98,150</div>
+      <div class="kpi-sub">폐기 40,347 + 증정 98,150</div>
     </div>
     <div class="kpi-card red">
       <div class="kpi-label">물류 폐기 (5월)</div>
@@ -263,6 +332,19 @@
       <div class="chart-title">생산 대비 폐기율 & 판매 대비 증정율</div>
       <div class="chart-wrap"><canvas id="chartRatios"></canvas></div>
     </div>
+  </div>
+
+  <div class="insight-box green-box">
+    <div class="insight-title">Positive: 물류 폐기 구조 개선</div>
+    생산 대비 폐기율이 <strong>2월 2.77% → 5월 0.09%</strong>로 급격히 개선되었습니다.
+    1~2월의 대량 소비기한 만료 폐기(월 1.5만개)가 사라지면서, 4~5월에는 순수 품질불량(진공/라벨/뚜껑/병파손)만 폐기하는 <strong>건전한 폐기 구조</strong>로 전환되었습니다.
+  </div>
+
+  <div class="insight-box red-box">
+    <div class="insight-title">Risk: 백화점 채널 무상 처분 의존도 심화</div>
+    3~5월 백화점 증정수량은 월평균 <strong>24,869개</strong>로, 1~2월 평균(11,772개) 대비 <strong>2.1배 증가</strong>했습니다.
+    증정이 특정 매장(롯데 중동점 12.8%, 갤러리아 광교 7.1%)에 집중되어 있어, 해당 매장의 <strong>판매 데이터 왜곡</strong> 가능성이 있습니다.<br>
+    이마트 검단점은 4~5월에만 4,912개가 갑자기 발생하여 <strong>신규 증정 채널</strong>로 추가된 것으로 보입니다.
   </div>
 
   <!-- 요약 테이블 -->
@@ -315,6 +397,19 @@
     </div>
   </div>
 
+  <div class="insight-box">
+    <div class="insight-title">매장별 증정 패턴 인사이트</div>
+    <strong>롯데 중동점</strong>은 5개월 내내 최다 증정(12,518개)으로, 상시적 재고 처분 채널로 활용되고 있습니다.<br>
+    <strong>이마트 검단점</strong>은 4~5월에만 4,912개가 발생하여 신규 증정 루트가 추가된 것으로 보입니다.<br>
+    <strong>AK 광명점</strong>은 1~2월 평균 495개 → 3~5월 평균 1,901개로 <strong>284% 급증</strong>하여 가장 큰 증가폭을 보였습니다.
+  </div>
+
+  <div class="insight-box blue-box">
+    <div class="insight-title">증정 품목 변화 - 이유식이 3월 핵심</div>
+    1~2월에는 <strong>퓨레(간식)</strong>가 증정 TOP을 차지했으나, 3월부터 <strong>후기 이유식</strong>(한우무나물다시마죽, 약콩닭죽 등)이 대량 증정되기 시작했습니다.<br>
+    이유식 증정이 1월 6,245개 → 3월 <strong>20,660개(3.3배)</strong>로 폭증한 것은, 물류에서 소비기한 만료로 폐기하던 이유식을 <strong>백화점에서 대량 증정 처리</strong>한 결과로 보입니다.
+  </div>
+
   <div class="chart-grid">
     <div class="chart-card">
       <div class="chart-title">거래처별 증정수량 TOP 15 <span class="badge badge-blue">Store</span></div>
@@ -328,8 +423,92 @@
 
   <div class="chart-grid">
     <div class="chart-card full">
-      <div class="chart-title">월별 단계(메뉴 카테고리)별 증정수량 히트맵</div>
+      <div class="chart-title">월별 단계(메뉴 카테고리)별 증정수량</div>
       <div class="chart-wrap tall"><canvas id="chartStageMonth"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card full">
+      <div class="chart-title">거래처별 3월 이후 증정 급증률 TOP 10 <span class="badge badge-red">Alert</span></div>
+      <div class="chart-wrap"><canvas id="chartStoreGrowth"></canvas></div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- 월별 증정 품목 TOP 10 -->
+  <div class="chart-card full" style="margin-bottom:24px;">
+    <div class="chart-title">월별 백화점 증정 품목 TOP 10 <span class="badge badge-purple">Monthly Detail</span></div>
+    <div class="month-selector" id="monthSelector">
+      <button class="month-btn active" onclick="showMonth('m1', this)">1월</button>
+      <button class="month-btn" onclick="showMonth('m2', this)">2월</button>
+      <button class="month-btn" onclick="showMonth('m3', this)">3월</button>
+      <button class="month-btn" onclick="showMonth('m4', this)">4월</button>
+      <button class="month-btn" onclick="showMonth('m5', this)">5월</button>
+    </div>
+    <div id="monthChartWrap" class="chart-wrap tall"></div>
+  </div>
+
+  <div class="insight-box purple-box">
+    <div class="insight-title">월별 품목 변화 요약</div>
+    <strong>1~2월:</strong> 퓨레 중심 (닭가슴살, 귤, 망고, 고구마치즈 등) - 간식류 재고 소진 패턴<br>
+    <strong>3월:</strong> 후기 이유식 대량 전환 (한우무나물다시마죽 762개, 약콩닭죽 725개) - 소비기한 임박 이유식 일괄 증정<br>
+    <strong>4월:</strong> 퓨레(100g) 신규 등장 + 무른밥 증가 (아기리조또, 병아리콩영양무른밥)<br>
+    <strong>5월:</strong> 퓨레 100g 규격이 TOP, 중기 이유식(가지나물치즈죽 210개, 한우뉴그린죽 182개) 새롭게 부상
+  </div>
+
+  <!-- 월별 품목 비교 테이블 -->
+  <div class="chart-card" style="margin-bottom:24px;">
+    <div class="chart-title">월별 증정 품목 TOP 5 비교</div>
+    <div style="overflow-x:auto;">
+    <table class="data-table">
+      <thead>
+        <tr><th>순위</th><th>1월</th><th>2월</th><th>3월</th><th>4월</th><th>5월</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1</strong></td>
+          <td>닭가슴살퓨레 (362)</td>
+          <td>망고퓨레 (451)</td>
+          <td class="highlight-cell">한우무나물다시마죽 (762)</td>
+          <td>닭가슴살퓨레100g (453)</td>
+          <td>닭가슴살퓨레100g (446)</td>
+        </tr>
+        <tr>
+          <td><strong>2</strong></td>
+          <td>귤퓨레 (312)</td>
+          <td>두부조림 (430)</td>
+          <td class="highlight-cell">약콩닭죽 (725)</td>
+          <td>단호박치즈퓨레 (436)</td>
+          <td>한우뉴그린죽 (322)</td>
+        </tr>
+        <tr>
+          <td><strong>3</strong></td>
+          <td>한우퀴노아약콩죽 (312)</td>
+          <td>고구마치즈퓨레 (413)</td>
+          <td class="highlight-cell">한우녹미야채죽 (627)</td>
+          <td>감자치즈퓨레 (406)</td>
+          <td>비타민애호박무른밥 (272)</td>
+        </tr>
+        <tr>
+          <td><strong>4</strong></td>
+          <td>사과퓨레 (226)</td>
+          <td>검은콩찹쌀죽 (388)</td>
+          <td class="highlight-cell">검은콩찹쌀죽 (547)</td>
+          <td>망고퓨레 (381)</td>
+          <td>병아리콩퓨레100g (243)</td>
+        </tr>
+        <tr>
+          <td><strong>5</strong></td>
+          <td>한우쑥갓밥 (226)</td>
+          <td>감자치즈퓨레 (344)</td>
+          <td class="highlight-cell">한우현미영양죽 (528)</td>
+          <td>현미약콩죽 (358)</td>
+          <td>병아리콩영양무른밥 (228)</td>
+        </tr>
+      </tbody>
+    </table>
     </div>
   </div>
 
@@ -381,6 +560,20 @@
     4~5월 폐기는 순수 <strong>품질불량(진공/라벨/뚜껑/병파손)</strong>만 남아있어, 폐기 자체는 건전한 구조로 전환되었습니다.
   </div>
 
+  <div class="insight-box blue-box">
+    <div class="insight-title">폐기 품목 패턴</div>
+    물류 폐기 TOP 품목은 <strong>후기 이유식(한우병아리콩죽 1,394개, 한우알배추죽 954개)</strong>과 <strong>영양밥(한우배우엉밥 916개)</strong>에 집중됩니다.<br>
+    이들은 대부분 <strong>1~2월 소비기한 만료</strong>로 폐기된 품목으로, 3월 이후에는 폐기 대신 백화점으로 이동했을 가능성이 높습니다.<br>
+    <strong>2월 전산오등록 1,712건</strong>은 일회성 이슈로, 시스템 개선이 필요한 부분입니다.
+  </div>
+
+  <div class="insight-box green-box">
+    <div class="insight-title">품질불량만 남긴 4~5월 = 건전한 폐기</div>
+    4~5월 폐기 626+639개는 모두 <strong>물리적 불량</strong>(진공불량 302, 병파손 150, 라벨불량 90, 뚜껑불량 72 등)입니다.<br>
+    이는 <strong>생산 라인의 품질 관리 이슈</strong>로, 소비기한 만료와 달리 구조적 과잉생산 문제가 아닙니다.<br>
+    다만 <strong>진공불량이 3월 이후 지속 증가</strong>(0 → 170 → 228 → 263 → 302)하고 있어 설비 점검이 필요합니다.
+  </div>
+
   <div class="chart-grid">
     <div class="chart-card">
       <div class="chart-title">월별 폐기 사유 구성 <span class="badge badge-red">Reason</span></div>
@@ -394,8 +587,15 @@
 
   <div class="chart-grid single">
     <div class="chart-card">
-      <div class="chart-title">소비기한 폐기 vs 백화점 증정 (역상관)</div>
+      <div class="chart-title">소비기한 폐기 vs 백화점 증정 (역상관) <span class="badge badge-orange">Correlation</span></div>
       <div class="chart-wrap"><canvas id="chartInverse"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-grid single">
+    <div class="chart-card">
+      <div class="chart-title">품질불량 유형별 월별 추이 (소비기한 제외) <span class="badge badge-blue">Quality</span></div>
+      <div class="chart-wrap"><canvas id="chartQuality"></canvas></div>
     </div>
   </div>
 
@@ -405,6 +605,14 @@
 <!-- ========== TAB 4: 메뉴별 분석 ========== -->
 <div id="tab-menu" class="tab-content">
 <div class="container">
+
+  <div class="insight-box purple-box">
+    <div class="insight-title">메뉴별 핵심 인사이트</div>
+    <strong>1. 후기 이유식</strong>: 폐기(12,876개)와 증정(23,955개) 모두 1위 - 과잉생산 또는 수요예측 오차가 가장 큰 카테고리<br>
+    <strong>2. 퓨레(간식)</strong>: 폐기는 592개에 불과하나 증정은 10,824개 - 재고 여유분을 적극적으로 백화점에 배분하는 전략적 증정 품목<br>
+    <strong>3. 영양밥/영양찬</strong>: 폐기와 증정 모두 높은 수준 - 유아식 전반의 재고 관리 개선 필요<br>
+    <strong>4. 초기2</strong>: 폐기 1,809개 vs 증정 2,994개로 증정 비율이 62.3% - 초기2 생산량 조정 검토 필요
+  </div>
 
   <div class="chart-grid">
     <div class="chart-card">
@@ -422,6 +630,14 @@
       <div class="chart-title">판매분류별 폐기 + 증정 비교</div>
       <div class="chart-wrap"><canvas id="chartCatCompare"></canvas></div>
     </div>
+  </div>
+
+  <div class="insight-box">
+    <div class="insight-title">Action Items 제안</div>
+    <strong>1. 후기 이유식 생산량 재조정:</strong> 폐기+증정 합계 36,831개(전체 26.6%)로, 수요예측 모델 개선이 가장 시급합니다.<br>
+    <strong>2. 퓨레 증정 전략 재검토:</strong> 퓨레는 폐기 없이 증정만 10,824개로, 의도적 증정인지 재고 떠넘기기인지 확인 필요합니다.<br>
+    <strong>3. 백화점 증정 한도 설정:</strong> 판매 대비 증정율 15% 이상은 수익성 훼손 → 매장별/월별 증정 상한선 도입을 검토해야 합니다.<br>
+    <strong>4. 진공불량 설비 점검:</strong> 3월 이후 진공불량이 매월 증가 추세(170→228→263→302)로, 포장 라인 점검이 필요합니다.
   </div>
 
   <div class="chart-card" style="margin-bottom:24px;">
@@ -456,15 +672,14 @@ const PALETTE = Object.values(COLORS);
 function fmt(n) { return n.toLocaleString(); }
 
 // ========== TAB LOGIC ==========
-function showTab(id) {
+function showTab(id, btn) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-' + id).classList.add('active');
-  event.target.classList.add('active');
+  btn.classList.add('active');
 }
 
 // ========== OVERVIEW CHARTS ==========
-// 1. Main overview chart
 new Chart(document.getElementById('chartOverview'), {
   type: 'bar',
   data: {
@@ -474,30 +689,20 @@ new Chart(document.getElementById('chartOverview'), {
         label: '물류 폐기',
         data: [15818, 19852, 3412, 626, 639],
         backgroundColor: 'rgba(239,68,68,0.75)',
-        borderColor: '#ef4444',
-        borderWidth: 1,
-        order: 2
+        borderColor: '#ef4444', borderWidth: 1, order: 2
       },
       {
         label: '백화점 증정',
         data: [13736, 9807, 28282, 25368, 20957],
         backgroundColor: 'rgba(245,158,11,0.75)',
-        borderColor: '#f59e0b',
-        borderWidth: 1,
-        order: 2
+        borderColor: '#f59e0b', borderWidth: 1, order: 2
       },
       {
         label: '합계',
         data: [29554, 29659, 31694, 25994, 21596],
-        type: 'line',
-        borderColor: '#1a1a2e',
-        backgroundColor: 'rgba(26,26,46,0.1)',
-        borderWidth: 3,
-        pointRadius: 5,
-        pointBackgroundColor: '#1a1a2e',
-        tension: 0.3,
-        fill: false,
-        order: 1
+        type: 'line', borderColor: '#1a1a2e', backgroundColor: 'rgba(26,26,46,0.1)',
+        borderWidth: 3, pointRadius: 5, pointBackgroundColor: '#1a1a2e',
+        tension: 0.3, fill: false, order: 1
       }
     ]
   },
@@ -505,10 +710,9 @@ new Chart(document.getElementById('chartOverview'), {
     responsive: true, maintainAspectRatio: false,
     plugins: {
       datalabels: {
-        display: function(ctx) { return ctx.dataset.label === '합계'; },
+        display: ctx => ctx.dataset.label === '합계',
         anchor: 'end', align: 'top', offset: 4,
-        font: { weight: 'bold', size: 12 },
-        formatter: v => fmt(v)
+        font: { weight: 'bold', size: 12 }, formatter: v => fmt(v)
       },
       tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + fmt(ctx.raw) } }
     },
@@ -519,81 +723,45 @@ new Chart(document.getElementById('chartOverview'), {
   }
 });
 
-// 2. Proportion chart
 new Chart(document.getElementById('chartProportion'), {
   type: 'bar',
   data: {
     labels: MONTHS,
     datasets: [
-      {
-        label: '물류 폐기 비중',
-        data: [53.5, 66.9, 10.8, 2.4, 3.0],
-        backgroundColor: 'rgba(239,68,68,0.7)',
-      },
-      {
-        label: '백화점 증정 비중',
-        data: [46.5, 33.1, 89.2, 97.6, 97.0],
-        backgroundColor: 'rgba(245,158,11,0.7)',
-      }
+      { label: '물류 폐기 비중', data: [53.5, 66.9, 10.8, 2.4, 3.0], backgroundColor: 'rgba(239,68,68,0.7)' },
+      { label: '백화점 증정 비중', data: [46.5, 33.1, 89.2, 97.6, 97.0], backgroundColor: 'rgba(245,158,11,0.7)' }
     ]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    indexAxis: 'x',
     plugins: {
-      datalabels: {
-        display: true,
-        formatter: v => v + '%',
-        color: '#fff',
-        font: { weight: 'bold', size: 11 }
-      }
+      datalabels: { display: true, formatter: v => v + '%', color: '#fff', font: { weight: 'bold', size: 11 } }
     },
-    scales: {
-      x: { stacked: true },
-      y: { stacked: true, max: 100, ticks: { callback: v => v + '%' } }
-    }
+    scales: { x: { stacked: true }, y: { stacked: true, max: 100, ticks: { callback: v => v + '%' } } }
   }
 });
 
-// 3. Ratios
 new Chart(document.getElementById('chartRatios'), {
   type: 'line',
   data: {
     labels: MONTHS,
     datasets: [
       {
-        label: '생산 대비 폐기율',
-        data: [2.34, 2.77, 0.48, 0.08, 0.09],
-        borderColor: COLORS.red,
-        backgroundColor: 'rgba(239,68,68,0.1)',
-        borderWidth: 3,
-        pointRadius: 5,
-        tension: 0.3,
-        fill: true,
-        yAxisID: 'y'
+        label: '생산 대비 폐기율', data: [2.34, 2.77, 0.48, 0.08, 0.09],
+        borderColor: COLORS.red, backgroundColor: 'rgba(239,68,68,0.1)',
+        borderWidth: 3, pointRadius: 5, tension: 0.3, fill: true, yAxisID: 'y'
       },
       {
-        label: '판매 대비 증정율',
-        data: [9.1, 7.0, 16.7, 16.9, 12.2],
-        borderColor: COLORS.orange,
-        backgroundColor: 'rgba(245,158,11,0.1)',
-        borderWidth: 3,
-        pointRadius: 5,
-        tension: 0.3,
-        fill: true,
-        yAxisID: 'y1'
+        label: '판매 대비 증정율', data: [9.1, 7.0, 16.7, 16.9, 12.2],
+        borderColor: COLORS.orange, backgroundColor: 'rgba(245,158,11,0.1)',
+        borderWidth: 3, pointRadius: 5, tension: 0.3, fill: true, yAxisID: 'y1'
       }
     ]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
     plugins: {
-      datalabels: {
-        display: true,
-        formatter: v => v + '%',
-        font: { weight: 'bold', size: 11 },
-        anchor: 'end', align: 'top'
-      }
+      datalabels: { display: true, formatter: v => v + '%', font: { weight: 'bold', size: 11 }, anchor: 'end', align: 'top' }
     },
     scales: {
       y: { position: 'left', title: { display: true, text: '폐기율 (%)' }, ticks: { callback: v => v + '%' } },
@@ -603,7 +771,6 @@ new Chart(document.getElementById('chartRatios'), {
 });
 
 // ========== DEPT STORE CHARTS ==========
-// Store TOP 15
 const storeData = [
   {name: '롯데 중동점', vals: [1744,1398,3193,3558,2625], total: 12518},
   {name: '갤러리아백화점 광교점', vals: [766,821,2090,1882,1419], total: 6978},
@@ -627,22 +794,14 @@ new Chart(document.getElementById('chartStoreTop'), {
   data: {
     labels: storeData.map(s => s.name),
     datasets: MONTHS.map((m, i) => ({
-      label: m,
-      data: storeData.map(s => s.vals[i]),
-      backgroundColor: PALETTE[i],
+      label: m, data: storeData.map(s => s.vals[i]), backgroundColor: PALETTE[i],
     }))
   },
   options: {
     responsive: true, maintainAspectRatio: false,
     indexAxis: 'y',
-    plugins: {
-      datalabels: { display: false },
-      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + fmt(ctx.raw) } }
-    },
-    scales: {
-      x: { stacked: true, ticks: { callback: v => fmt(v) } },
-      y: { stacked: true }
-    }
+    plugins: { datalabels: { display: false }, tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + fmt(ctx.raw) } } },
+    scales: { x: { stacked: true, ticks: { callback: v => fmt(v) } }, y: { stacked: true } }
   }
 });
 
@@ -651,14 +810,13 @@ new Chart(document.getElementById('chartStoreTop'), {
   const tbody = document.querySelector('#storeTable tbody');
   storeData.forEach(s => {
     const maxIdx = s.vals.indexOf(Math.max(...s.vals));
-    const trend = s.vals[4] > s.vals[0] ? '<span class="trend-up">↑</span>' : '<span class="trend-down">↓</span>';
-    const row = `<tr>
+    const trend = s.vals[4] > s.vals[0] ? '<span class="trend-up">&#8593;</span>' : '<span class="trend-down">&#8595;</span>';
+    tbody.innerHTML += `<tr>
       <td>${s.name}</td>
       ${s.vals.map((v, i) => `<td ${i === maxIdx ? 'class="highlight-cell"' : ''}>${fmt(v)}</td>`).join('')}
       <td><strong>${fmt(s.total)}</strong></td>
       <td>${trend}</td>
     </tr>`;
-    tbody.innerHTML += row;
   });
 })();
 
@@ -677,26 +835,18 @@ new Chart(document.getElementById('chartCatMonth'), {
   options: {
     responsive: true, maintainAspectRatio: false,
     plugins: { datalabels: { display: false } },
-    scales: {
-      x: { stacked: true },
-      y: { stacked: true, ticks: { callback: v => fmt(v) } }
-    }
+    scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: v => fmt(v) } } }
   }
 });
 
-// Stage by month heatmap (grouped bar)
+// Stage by month
 const deptStages = ['후기','무른밥','영양찬','영양밥','영양국','퓨레','중기','초기2','초기1','준비기'];
 const deptStageData = {
-  '후기':     [3668,1589,10410,4714,3574],
-  '무른밥':   [799,499,3623,5580,3790],
-  '영양찬':   [2246,1631,1509,2620,3571],
-  '영양밥':   [2025,998,1734,3943,2922],
-  '영양국':   [1196,774,2201,1220,2574],
-  '퓨레':     [1980,2610,1966,4464,1804],
-  '중기':     [1246,952,3780,1527,1800],
-  '초기2':    [199,370,1989,238,198],
-  '초기1':    [241,275,571,123,376],
-  '준비기':   [51,35,168,63,71],
+  '후기': [3668,1589,10410,4714,3574], '무른밥': [799,499,3623,5580,3790],
+  '영양찬': [2246,1631,1509,2620,3571], '영양밥': [2025,998,1734,3943,2922],
+  '영양국': [1196,774,2201,1220,2574], '퓨레': [1980,2610,1966,4464,1804],
+  '중기': [1246,952,3780,1527,1800], '초기2': [199,370,1989,238,198],
+  '초기1': [241,275,571,123,376], '준비기': [51,35,168,63,71],
 };
 
 new Chart(document.getElementById('chartStageMonth'), {
@@ -704,9 +854,7 @@ new Chart(document.getElementById('chartStageMonth'), {
   data: {
     labels: deptStages,
     datasets: MONTHS.map((m, i) => ({
-      label: m,
-      data: deptStages.map(s => deptStageData[s][i]),
-      backgroundColor: PALETTE[i],
+      label: m, data: deptStages.map(s => deptStageData[s][i]), backgroundColor: PALETTE[i],
     }))
   },
   options: {
@@ -716,8 +864,130 @@ new Chart(document.getElementById('chartStageMonth'), {
   }
 });
 
+// Store growth chart
+const storeGrowth = [
+  ['AK 광명점', 495, 1901, 284.0],
+  ['스타필드 수원점', 345, 1260, 265.3],
+  ['롯데 대구점', 328, 1087, 231.9],
+  ['스타필드 운정점', 305, 870, 185.1],
+  ['롯데 잠실점', 489, 1324, 170.7],
+  ['AK 기흥점', 441, 1098, 149.0],
+  ['갤러리아백화점 광교점', 794, 1797, 126.5],
+  ['신세계백화점 강남점', 789, 1617, 105.1],
+  ['신세계 본점', 575, 1163, 102.4],
+  ['롯데 중동점', 1571, 3125, 98.9],
+];
+
+new Chart(document.getElementById('chartStoreGrowth'), {
+  type: 'bar',
+  data: {
+    labels: storeGrowth.map(s => s[0]),
+    datasets: [
+      { label: '1~2월 평균', data: storeGrowth.map(s => s[1]), backgroundColor: 'rgba(148,163,184,0.6)' },
+      { label: '3~5월 평균', data: storeGrowth.map(s => s[2]), backgroundColor: 'rgba(239,68,68,0.7)' },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: {
+      datalabels: {
+        display: ctx => ctx.datasetIndex === 1,
+        anchor: 'end', align: 'end',
+        formatter: (v, ctx) => '+' + storeGrowth[ctx.dataIndex][3] + '%',
+        font: { weight: 'bold', size: 11 }, color: '#ef4444'
+      }
+    },
+    scales: { x: { ticks: { callback: v => fmt(v) } } }
+  }
+});
+
+// ========== MONTHLY GIFT ITEM TOP 10 ==========
+const monthlyItems = {
+  m1: [
+    ['퓨레-닭가슴살퓨레', 362], ['퓨레-귤퓨레', 312], ['후기-한우퀴노아약콩죽', 312],
+    ['퓨레-사과퓨레', 226], ['영양밥-한우쑥갓밥', 226], ['영양찬-한우유부조림', 223],
+    ['퓨레-망고퓨레', 209], ['후기-비타민닭죽', 199], ['퓨레-블루베리바나나퓨레', 179],
+    ['후기-아기리조또', 179]
+  ],
+  m2: [
+    ['퓨레-망고퓨레', 451], ['영양찬-두부조림', 430], ['퓨레-고구마치즈퓨레', 413],
+    ['후기-검은콩찹쌀죽', 388], ['퓨레-감자치즈퓨레', 344], ['퓨레-사과퓨레', 284],
+    ['퓨레-닭가슴살퓨레', 246], ['퓨레-병아리콩퓨레', 201], ['후기-한우애호박감자죽', 177],
+    ['퓨레-귤퓨레', 170]
+  ],
+  m3: [
+    ['후기-한우무나물다시마죽', 762], ['후기-약콩닭죽', 725], ['후기-한우녹미야채죽', 627],
+    ['후기-검은콩찹쌀죽', 547], ['후기-한우현미영양죽', 528], ['무른밥-병아리콩영양무른밥', 527],
+    ['후기-한우무나물죽', 473], ['후기-한우연근팥죽', 464], ['퓨레-감자치즈퓨레', 447],
+    ['무른밥-연두부근대무른밥', 393]
+  ],
+  m4: [
+    ['퓨레-닭가슴살퓨레(100g)', 453], ['퓨레-단호박치즈퓨레', 436], ['퓨레-감자치즈퓨레', 406],
+    ['퓨레-망고퓨레', 381], ['후기-현미약콩죽', 358], ['무른밥-아기리조또', 322],
+    ['무른밥-병아리콩영양무른밥', 316], ['퓨레-배퓨레', 312], ['영양밥-한우무나물밥', 296],
+    ['무른밥-한우무나물다시마무른밥', 290]
+  ],
+  m5: [
+    ['퓨레-닭가슴살퓨레(100g)', 446], ['후기-한우뉴그린죽', 322], ['무른밥-비타민애호박무른밥', 272],
+    ['퓨레-병아리콩퓨레(100g)', 243], ['무른밥-병아리콩영양무른밥', 228], ['무른밥-한우뉴그린무른밥', 211],
+    ['중기-가지나물치즈죽', 210], ['퓨레-망고퓨레(100g)', 185], ['퓨레-감자치즈퓨레(100g)', 183],
+    ['중기-한우뉴그린죽', 182]
+  ]
+};
+
+const monthColors = {
+  m1: COLORS.red, m2: COLORS.orange, m3: COLORS.blue, m4: COLORS.purple, m5: COLORS.green
+};
+
+let currentMonthChart = null;
+
+function showMonth(monthKey, btn) {
+  document.querySelectorAll('.month-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const wrap = document.getElementById('monthChartWrap');
+  wrap.innerHTML = '<canvas id="chartMonthly"></canvas>';
+  const items = monthlyItems[monthKey];
+  const color = monthColors[monthKey];
+
+  if (currentMonthChart) currentMonthChart.destroy();
+  currentMonthChart = new Chart(document.getElementById('chartMonthly'), {
+    type: 'bar',
+    data: {
+      labels: items.map(i => i[0]),
+      datasets: [{
+        data: items.map(i => i[1]),
+        backgroundColor: items.map((_, idx) => {
+          const alpha = 1 - idx * 0.06;
+          return color + Math.round(alpha * 255).toString(16).padStart(2, '0');
+        }),
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          display: true, anchor: 'end', align: 'end',
+          formatter: v => fmt(v), font: { weight: 'bold', size: 12 }, color: '#374151'
+        }
+      },
+      scales: {
+        x: { ticks: { callback: v => fmt(v) }, grid: { color: '#f1f5f9' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+// Initialize first month chart
+document.addEventListener('DOMContentLoaded', () => {
+  showMonth('m1', document.querySelector('.month-btn'));
+});
+
 // ========== LOGISTICS CHARTS ==========
-// Reasons stacked
 new Chart(document.getElementById('chartReasons'), {
   type: 'bar',
   data: {
@@ -735,26 +1005,17 @@ new Chart(document.getElementById('chartReasons'), {
   options: {
     responsive: true, maintainAspectRatio: false,
     plugins: { datalabels: { display: false } },
-    scales: {
-      x: { stacked: true },
-      y: { stacked: true, ticks: { callback: v => fmt(v) } }
-    }
+    scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: v => fmt(v) } } }
   }
 });
 
-// Logistics stage
 const logStages = ['후기','영양찬','영양밥','무른밥','영양국','초기2','중기','퓨레','쿠팡','초기1'];
 const logStageData = {
-  '후기':   [8346,3798,436,138,159],
-  '영양찬': [2526,3173,255,61,71],
-  '영양밥': [1886,4061,257,51,45],
-  '무른밥': [1259,735,422,151,120],
-  '영양국': [468,323,142,41,32],
-  '초기2':  [765,434,580,13,17],
-  '중기':   [135,677,224,100,88],
-  '퓨레':   [229,281,56,18,8],
-  '쿠팡':   [0,1601,211,31,61],
-  '초기1':  [96,386,21,15,2],
+  '후기': [8346,3798,436,138,159], '영양찬': [2526,3173,255,61,71],
+  '영양밥': [1886,4061,257,51,45], '무른밥': [1259,735,422,151,120],
+  '영양국': [468,323,142,41,32], '초기2': [765,434,580,13,17],
+  '중기': [135,677,224,100,88], '퓨레': [229,281,56,18,8],
+  '쿠팡': [0,1601,211,31,61], '초기1': [96,386,21,15,2],
 };
 
 new Chart(document.getElementById('chartLogStage'), {
@@ -762,9 +1023,7 @@ new Chart(document.getElementById('chartLogStage'), {
   data: {
     labels: logStages,
     datasets: MONTHS.map((m, i) => ({
-      label: m,
-      data: logStages.map(s => logStageData[s][i]),
-      backgroundColor: PALETTE[i],
+      label: m, data: logStages.map(s => logStageData[s][i]), backgroundColor: PALETTE[i],
     }))
   },
   options: {
@@ -774,48 +1033,53 @@ new Chart(document.getElementById('chartLogStage'), {
   }
 });
 
-// Inverse correlation
 new Chart(document.getElementById('chartInverse'), {
   type: 'line',
   data: {
     labels: MONTHS,
     datasets: [
       {
-        label: '소비기한 폐기',
-        data: [15012, 15273, 1952, 0, 0],
-        borderColor: COLORS.red,
-        backgroundColor: 'rgba(239,68,68,0.15)',
-        borderWidth: 3, pointRadius: 6, tension: 0.3, fill: true,
-        yAxisID: 'y'
+        label: '소비기한 폐기', data: [15012, 15273, 1952, 0, 0],
+        borderColor: COLORS.red, backgroundColor: 'rgba(239,68,68,0.15)',
+        borderWidth: 3, pointRadius: 6, tension: 0.3, fill: true
       },
       {
-        label: '백화점 증정',
-        data: [13736, 9807, 28282, 25368, 20957],
-        borderColor: COLORS.orange,
-        backgroundColor: 'rgba(245,158,11,0.15)',
-        borderWidth: 3, pointRadius: 6, tension: 0.3, fill: true,
-        yAxisID: 'y'
+        label: '백화점 증정', data: [13736, 9807, 28282, 25368, 20957],
+        borderColor: COLORS.orange, backgroundColor: 'rgba(245,158,11,0.15)',
+        borderWidth: 3, pointRadius: 6, tension: 0.3, fill: true
       }
     ]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
     plugins: {
-      datalabels: {
-        display: true,
-        formatter: v => fmt(v),
-        font: { weight: 'bold', size: 11 },
-        anchor: 'end', align: 'top'
-      }
+      datalabels: { display: true, formatter: v => fmt(v), font: { weight: 'bold', size: 11 }, anchor: 'end', align: 'top' }
     },
-    scales: {
-      y: { ticks: { callback: v => fmt(v) } }
-    }
+    scales: { y: { ticks: { callback: v => fmt(v) } } }
+  }
+});
+
+// Quality defect trend (excl. shelf life)
+new Chart(document.getElementById('chartQuality'), {
+  type: 'line',
+  data: {
+    labels: ['12월','1월','2월','3월','4월','5월'],
+    datasets: [
+      { label: '진공불량', data: [0,0,170,228,263,302], borderColor: COLORS.blue, backgroundColor: 'rgba(59,130,246,0.1)', borderWidth: 2.5, pointRadius: 5, tension: 0.3, fill: false },
+      { label: '병파손', data: [24,96,79,269,194,150], borderColor: COLORS.purple, borderWidth: 2.5, pointRadius: 5, tension: 0.3, fill: false },
+      { label: '라벨불량', data: [34,139,80,85,81,90], borderColor: COLORS.green, borderWidth: 2.5, pointRadius: 5, tension: 0.3, fill: false },
+      { label: '뚜껑불량', data: [118,259,97,80,61,72], borderColor: COLORS.orange, borderWidth: 2.5, pointRadius: 5, tension: 0.3, fill: false },
+      { label: '오염(이물질)', data: [0,0,432,35,27,24], borderColor: COLORS.pink, borderWidth: 2.5, pointRadius: 5, tension: 0.3, fill: false },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { datalabels: { display: false } },
+    scales: { y: { ticks: { callback: v => fmt(v) } } }
   }
 });
 
 // ========== MENU CHARTS ==========
-// Gift items top 15
 const giftItems = [
   ['퓨레-망고퓨레',1357],['퓨레-감자치즈퓨레',1283],['퓨레-닭가슴살퓨레',1155],
   ['후기-검은콩찹쌀죽',1124],['무른밥-병아리콩영양무른밥',1102],['후기-현미약콩죽',1002],
@@ -828,27 +1092,15 @@ new Chart(document.getElementById('chartMenuGift'), {
   type: 'bar',
   data: {
     labels: giftItems.map(i => i[0]),
-    datasets: [{
-      data: giftItems.map(i => i[1]),
-      backgroundColor: giftItems.map((_, i) => PALETTE[i % PALETTE.length]),
-    }]
+    datasets: [{ data: giftItems.map(i => i[1]), backgroundColor: giftItems.map((_, i) => PALETTE[i % PALETTE.length]) }]
   },
   options: {
-    responsive: true, maintainAspectRatio: false,
-    indexAxis: 'y',
-    plugins: {
-      legend: { display: false },
-      datalabels: {
-        display: true, anchor: 'end', align: 'end',
-        formatter: v => fmt(v),
-        font: { weight: 'bold', size: 11 }
-      }
-    },
+    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+    plugins: { legend: { display: false }, datalabels: { display: true, anchor: 'end', align: 'end', formatter: v => fmt(v), font: { weight: 'bold', size: 11 } } },
     scales: { x: { ticks: { callback: v => fmt(v) } } }
   }
 });
 
-// Disposal items top 15
 const dispItems = [
   ['후기-한우병아리콩죽',1394],['후기-한우알배추죽',954],['영양밥-한우배우엉밥',916],
   ['영양밥-한우애호박밥',904],['영양찬-한우브로컬리찜',858],['후기-한우브로컬리사과죽',712],
@@ -864,30 +1116,20 @@ new Chart(document.getElementById('chartMenuDisposal'), {
     datasets: [{
       data: dispItems.map(i => i[1]),
       backgroundColor: dispItems.map((_, i) => {
-        const reds = ['#fca5a5','#f87171','#ef4444','#dc2626','#b91c1c','#991b1b','#7f1d1d',
-                      '#fecaca','#fca5a5','#f87171','#ef4444','#dc2626','#b91c1c','#991b1b','#7f1d1d'];
+        const reds = ['#fca5a5','#f87171','#ef4444','#dc2626','#b91c1c','#991b1b','#7f1d1d','#fecaca','#fca5a5','#f87171','#ef4444','#dc2626','#b91c1c','#991b1b','#7f1d1d'];
         return reds[i];
-      }),
+      })
     }]
   },
   options: {
-    responsive: true, maintainAspectRatio: false,
-    indexAxis: 'y',
-    plugins: {
-      legend: { display: false },
-      datalabels: {
-        display: true, anchor: 'end', align: 'end',
-        formatter: v => fmt(v),
-        font: { weight: 'bold', size: 11 }
-      }
-    },
+    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+    plugins: { legend: { display: false }, datalabels: { display: true, anchor: 'end', align: 'end', formatter: v => fmt(v), font: { weight: 'bold', size: 11 } } },
     scales: { x: { ticks: { callback: v => fmt(v) } } }
   }
 });
 
-// Category compare (disposal vs gift)
 const cats = ['이유식','유아식','간식','키즈식'];
-const dispByCat = [14197, 16762, 592, 1931]; // 폐기: 후기+무른밥+중기+초기 / 영양밥+영양찬+영양국 / 퓨레 / 솥밥+부먹+키즈
+const dispByCat = [14197, 16762, 592, 1931];
 const giftByCat = [53743, 25227, 10824, 375];
 
 new Chart(document.getElementById('chartCatCompare'), {
@@ -901,13 +1143,7 @@ new Chart(document.getElementById('chartCatCompare'), {
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    plugins: {
-      datalabels: {
-        display: true, anchor: 'end', align: 'top',
-        formatter: v => fmt(v),
-        font: { weight: 'bold', size: 11 }
-      }
-    },
+    plugins: { datalabels: { display: true, anchor: 'end', align: 'top', formatter: v => fmt(v), font: { weight: 'bold', size: 11 } } },
     scales: { y: { ticks: { callback: v => fmt(v) } } }
   }
 });
@@ -915,28 +1151,15 @@ new Chart(document.getElementById('chartCatCompare'), {
 // Stage compare table
 (function() {
   const stages = [
-    ['후기', 12876, 23955],
-    ['무른밥', 2687, 14291],
-    ['영양찬', 6086, 11577],
-    ['영양밥', 6800, 11622],
-    ['영양국', 1006, 7945],
-    ['퓨레', 592, 10824],
-    ['중기', 1224, 9305],
-    ['초기2', 1809, 2994],
-    ['초기1', 520, 1586],
-    ['준비기', 208, 388],
+    ['후기', 12876, 23955], ['무른밥', 2687, 14291], ['영양찬', 6086, 11577],
+    ['영양밥', 6800, 11622], ['영양국', 1006, 7945], ['퓨레', 592, 10824],
+    ['중기', 1224, 9305], ['초기2', 1809, 2994], ['초기1', 520, 1586], ['준비기', 208, 388],
   ];
   const tbody = document.getElementById('stageCompareBody');
   stages.forEach(([name, disp, gift]) => {
     const total = disp + gift;
     const ratio = (gift / total * 100).toFixed(1);
-    tbody.innerHTML += `<tr>
-      <td>${name}</td>
-      <td>${fmt(disp)}</td>
-      <td>${fmt(gift)}</td>
-      <td><strong>${fmt(total)}</strong></td>
-      <td>${ratio}%</td>
-    </tr>`;
+    tbody.innerHTML += `<tr><td>${name}</td><td>${fmt(disp)}</td><td>${fmt(gift)}</td><td><strong>${fmt(total)}</strong></td><td>${ratio}%</td></tr>`;
   });
 })();
 </script>
